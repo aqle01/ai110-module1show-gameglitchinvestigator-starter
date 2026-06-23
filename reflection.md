@@ -65,11 +65,21 @@ Yes. Claude pointed out that the starter tests only checked the outcome label an
 
 - How would you explain Streamlit "reruns" and session state to a friend who has never used Streamlit?
 
+Streamlit re-runs the entire script from top to bottom every time you interact with a widget — clicking a button, typing in the box, or changing the difficulty dropdown. That means ordinary Python variables get rebuilt from scratch on every interaction, so the program basically has amnesia between clicks. `st.session_state` is a dictionary that survives those re-runs, so anything the game needs to remember — the secret number, the score, the attempt count, whether you've already won — has to live there instead of in a normal variable. The way I'd put it to a friend: the script runs again from the beginning on every single click, and session_state is the only sticky note that doesn't get thrown away each time.
+
 ---
 
 ## 5. Looking ahead: your developer habits
 
 - What is one habit or strategy from this project that you want to reuse in future labs or projects?
   - This could be a testing habit, a prompting strategy, or a way you used Git.
+
+Writing a test that targets the actual broken behavior — here, the hint *message direction* ("Go HIGHER" vs "Go LOWER"), not just the outcome label — and then running `pytest` before calling a fix "done." I also want to keep fixing one bug at a time and re-running the tests, instead of changing a bunch of things at once and hoping it works.
+
 - What is one thing you would do differently next time you work with AI on a coding task?
+
+I'd verify each AI suggestion against the real code and behavior before accepting it, instead of trusting confident-sounding output. For example, I rejected a suggestion to delete the `except TypeError` fallback branch in `check_guess` during the refactor — it looked like dead code, but the app still casts the secret to a string on every other attempt, so removing that branch would have crashed the game with a TypeError on those turns. I confirmed this by tracing the submit logic, so I kept the branch and left a `# FIXME` on the underlying string-cast bug instead. The README's hint that "the secret number changes every time you click Submit" was also misleading for this code — the secret is actually stored in session_state, and the real culprit was that string cast.
+
 - In one or two sentences, describe how this project changed the way you think about AI generated code.
+
+AI-generated code can look clean, well-commented, and "production-ready" while being subtly and confidently wrong — reversed hints, and starter tests that passed without ever testing the actual bug. I now treat AI output as a first draft to read, verify, and test, not something to trust on sight.
